@@ -5,7 +5,11 @@ import interfaces.List;
 public class Ballot {
 	private int ballotNumber;
 
-	private List<CandidateRanksAndIDs> voteList;
+	private List<CandidateRanksAndIDs> candidateList;
+
+	public List<CandidateRanksAndIDs> getCandidateList() {
+		return candidateList;
+	}
 
 	public Ballot(String[] ballotStringArray) {
 		this.ballotNumber = Integer.valueOf(ballotStringArray[0]);
@@ -16,11 +20,11 @@ public class Ballot {
 	//---------------------------------methods-----------------------------------
 
 	public void candidateIdAndRank(String[] ballotStringArray) {
-		voteList = new ArrayList<>();
+		candidateList = new ArrayList<>();
 		for(int i = 1; i < ballotStringArray.length; i++) {
 			String ID = ballotStringArray[i].substring(0, ballotStringArray[i].indexOf(":"));
 			String rank = ballotStringArray[i].substring(ballotStringArray[i].indexOf(":") +1 );
-			voteList.add(new CandidateRanksAndIDs(Integer.parseInt(ID), Integer.parseInt(rank)));
+			candidateList.add(new CandidateRanksAndIDs(Integer.parseInt(ID), Integer.parseInt(rank)));
 		}
 	}
 
@@ -32,36 +36,55 @@ public class Ballot {
 	// rank for that candidate
 	//return -1 if not found
 	public int getRankByCandidate(int candidateId) {
-		for(int i = 0; i < voteList.size(); i++) {
-			if(voteList.get(i).getCandidateID() == candidateId) {
-				return voteList.get(i).getCandidateRank();
+		for(int i = 0; i < candidateList.size(); i++) {
+			if(candidateList.get(i).getCandidateID() == candidateId) {
+				return candidateList.get(i).getCandidateRank();
 			}
-			
+
 		}
 		return -1;
 	} 
-	
-	public static void main(String[] args) {
-		
-	}
+
 
 	// candidate with that rank
 	//return -1 if not found
 	public int getCandidateByRank(int rank) {
-		for(int i = 1; i < voteList.size(); i++) {
-			if(voteList.get(i).getCandidateRank() == rank) {
-				return voteList.get(i).getCandidateID();
+		for(int i = 0; i < candidateList.size(); i++) {
+			if(candidateList.get(i).getCandidateRank() == rank) {
+				return candidateList.get(i).getCandidateID();
 			}
-			
+
 		}
 		return -1;
 	} 
 
 	// eliminates a candidate
+
+	int newRank = 0;
 	public boolean eliminate(int candidateId) {
-		for(int i = 0; i < voteList.size(); i++) {
-			if(voteList.get(i).getCandidateID() == candidateId) {
-				voteList.remove(voteList.get(i));
+		for(int i = 0; i < candidateList.size(); i++) {
+			if(candidateList.get(i).getCandidateID() == candidateId) { 
+				for(int j = 0; j < candidateList.size(); j++) {
+
+					
+					if(i != j) {
+						
+						if(candidateList.get(i).getCandidateRank() < candidateList.get(j).getCandidateRank()) {
+							System.out.println("---------------------");
+							System.out.println("Before: " + candidateList.get(j).getCandidateID() + " "+ candidateList.get(j).getCandidateRank());
+							candidateList.get(j).setCandidateRank(candidateList.get(j).getCandidateRank()-1);
+
+							System.out.println("After: " + candidateList.get(j).getCandidateID()+ " " + candidateList.get(j).getCandidateRank());
+							System.out.println("---------------------");
+						}
+					}
+
+				}
+
+				candidateList.remove(candidateList.get(i));
+
+
+
 				return true;
 			}
 		}
@@ -77,19 +100,19 @@ public class Ballot {
 	 */
 	public boolean isValidBallot() {
 
-		if(voteList.isEmpty()) {
+		if(candidateList.isEmpty()) {
 			return false;
 		}
-		for(int i = 0; i < voteList.size(); i++) {
-			for(int j = i + 1; j < voteList.size(); j++) {
+		for(int i = 0; i < candidateList.size(); i++) {
+			for(int j = i + 1; j < candidateList.size(); j++) {
 
-				if(voteList.get(i).getCandidateID() == voteList.get(j).getCandidateID()) {
+				if(candidateList.get(i).getCandidateID() == candidateList.get(j).getCandidateID()) {
 					return false;
 				}
-				if(voteList.get(i).getCandidateRank() == voteList.get(j).getCandidateRank()) {
+				if(candidateList.get(i).getCandidateRank() == candidateList.get(j).getCandidateRank()) {
 					return false;
 				}
-				if(voteList.get(i).getCandidateRank() > Election.candidateList.size()) {
+				if(candidateList.get(i).getCandidateRank() > Election.candidateIdList.size()) {
 					return false;
 				}
 			}
@@ -99,7 +122,7 @@ public class Ballot {
 
 	public void printBallotInfo() {
 		System.out.println("{Ballot " + getBallotNum() + "}");
-		for (CandidateRanksAndIDs votes : voteList) {
+		for (CandidateRanksAndIDs votes : candidateList) {
 			System.out.println("\t" + "Candidate: " + votes.getCandidateID() + "," + " Rank: " + votes.getCandidateRank());
 		}
 	}
