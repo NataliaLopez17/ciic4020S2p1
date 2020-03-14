@@ -2,226 +2,274 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 
 import classes.ArrayList;
 import classes.DynamicSet;
 import interfaces.List;
-import interfaces.Set;
 
 public class Election {
 
-	private static final int DEFAULT_SIZE = 10;
 	public static List<Ballot> voteList;
 	public static List<CandidateRanksAndIDs> candidateIdList;
 	public static List<String> candidateNameList;
+	public static List<DynamicSet<Ballot>> sameRanks;
 
 	public static FileWriter fileWriter;
 
 	public static void main(String[] args) throws IOException {
 
+		fileWriter = new FileWriter("results.txt");
 		ballotScanner();
 		candidateScanner();
-
-		//for(int i = 0; i < voteList.size(); i++) {
-		//for(int j = 0; j < voteList.size(); j++) {
-
-		//voteList.get(i).printBallotInfo();
-		//System.out.println(voteList.get(i).toString());
-		//System.out.println("----------------------------------------");
-		//}
-		//}
-
-
-		//candidateBallotArrayOfSets(1);
-
-		//Ballot b = voteList.get(0);
-		//b.eliminate(1);
-
-		fileWriter = new FileWriter("results.txt");
-		CountingRounds();
+		CountingRounds(sameRanks);
 		fileWriter.close();
 	}
 
-
-	public static void ballotScanner(){
-		String ballotString ="";	
+	/**
+	 * creates an array of all the ballots
+	 * 
+	 * @param none
+	 * 
+	 * @return none
+	 */
+	public static void ballotScanner() {
+		String ballotString = "";
 		BufferedReader ballotsSC = null;
 		voteList = new ArrayList<>();
 
-
 		try {
 			ballotsSC = new BufferedReader(new FileReader("ballots.csv"));
-			while((ballotString = ballotsSC.readLine()) != null) {
+			while ((ballotString = ballotsSC.readLine()) != null) {
 				String[] ballotStringArray = ballotString.split(",");
 				voteList.add(new Ballot(ballotStringArray));
-
-				//System.out.println("----starts here-----");
-				//for(String i : ballotStringArray) {
-				//System.out.println(i);
-				//}
-				//System.out.println("-----ends here-----");
 			}
-		} 
-		catch (IOException e) {
+		} catch (IOException e) {
 			e.printStackTrace();
-		}
-		finally {
-			if(ballotsSC != null) {
+		} finally {
+			if (ballotsSC != null) {
 				try {
 					ballotsSC.close();
-				}
-				catch(IOException e){
+				} catch (IOException e) {
 					e.printStackTrace();
 				}
 			}
 		}
 	}
 
-	public static void candidateScanner(){
-		String candidateString ="";	
+	/**
+	 * creates an array of all the candidates
+	 * 
+	 * @param none
+	 * 
+	 * @return none
+	 */
+	public static void candidateScanner() {
+		String candidateString = "";
 		BufferedReader candidatesSC = null;
 		candidateIdList = new ArrayList<>();
 		candidateNameList = new ArrayList<>();
 
 		try {
 			candidatesSC = new BufferedReader(new FileReader("candidates.csv"));
-			while((candidateString = candidatesSC.readLine()) != null) {
+			while ((candidateString = candidatesSC.readLine()) != null) {
 				String[] candidateStringArray = candidateString.split(",");
 				candidateIdList.add(new CandidateRanksAndIDs(candidateStringArray));
-				candidateNameList.add(candidateStringArray[0]);	
+				candidateNameList.add(candidateStringArray[0]);
 			}
-		} 
-		catch (IOException e) {
+		} catch (IOException e) {
 			e.printStackTrace();
-		}
-		finally {
-			if(candidatesSC != null) {
+		} finally {
+			if (candidatesSC != null) {
 				try {
 					candidatesSC.close();
-				}
-				catch(IOException e){
+				} catch (IOException e) {
 					e.printStackTrace();
 				}
 			}
 		}
 	}
 
-	public static List<Set<String>> candidateBallotArrayOfSets(int rank) {
+	/**
+	 * Creates a list of sets where each index is a candidate and it contains the
+	 * ballots that were voted #1.
+	 * 
+	 * @param rank int where it takes a rank specified
+	 * 
+	 * @return returns a list of sets where each index is a candidate and it
+	 *         contains the ballots that were voted #1
+	 */
+	public static List<DynamicSet<Ballot>> candidateBallotArrayOfSets(int rank) {
 
-		List<Set<String>> numberOneBallot = new ArrayList<Set<String>>(DEFAULT_SIZE); 
+		List<DynamicSet<Ballot>> numberOneBallot = new ArrayList<DynamicSet<Ballot>>();
 		int candidateNum = 1;
-		Set<String> newSets = new DynamicSet<String>(1);
-		for(int i = 0; i < voteList.size(); i++) {
+		DynamicSet<Ballot> newSets = new DynamicSet<Ballot>(1);
+		for (int i = 0; i < voteList.size(); i++) {
 
 			Ballot newBallot = voteList.get(i);
-
-			if(newBallot == null) {
+			if (newBallot == null) {
 				continue;
 			}
-
-			if(newBallot.getRankByCandidate(candidateNum) == rank) {
-				newSets.add(Integer.toString(newBallot.getBallotNum()));
-				//newSets.add(voteList.get(i).toString());
+			if (newBallot.getRankByCandidate(candidateNum) == rank) {
+				newSets.add(voteList.get(i));
 
 			}
-
-			if(i == voteList.size() - 1 && candidateNum < voteList.size()) {
+			if (i == voteList.size() - 1 && candidateNum < voteList.size()) {
 				i = -1;
 				candidateNum++;
 				numberOneBallot.add(newSets);
-				newSets = new DynamicSet<String>(1);
+				newSets = new DynamicSet<Ballot>(1);
 
-				if(candidateNum > candidateIdList.size()) {
+				if (candidateNum > candidateIdList.size()) {
 					break;
-				}
-				else {
+				} else {
 					continue;
 				}
 			}
 		}
-		//for(Set<String> sets : numberOneBallot) {
-		//for(String s : sets) {
-		//System.out.println(s);
-
-		//}
-		//System.out.println("-----------------");
-		//}
 
 		return numberOneBallot;
 	}
 
-	public static void CountingRounds() {
+	/**
+	 * finds the candidates that are tied
+	 * 
+	 * @param sameRanks list where each index is a candidate and it contains the
+	 *                  ballots that were voted #1 or #2, etc. candidateLocation
+	 *                  list of the candidates which are tied
+	 * @return index of the loser candidate
+	 */
+	public static int tieBreaker(List<DynamicSet<Ballot>> sameRanks, List<Integer> candidateLocation) {
+		int pos = 2;
+		int location = 1;
+		boolean flag = true;
+		sameRanks = candidateBallotArrayOfSets(pos);
+		if (candidateLocation.size() == pos) {
+			for (int i = 0; i < sameRanks.size(); i++) {
+				if (sameRanks.get(candidateLocation.get(i)).size() > sameRanks.get(candidateLocation.get(location))
+						.size()) {
+					location++;
+					return candidateLocation.get(i);
+				}
+				if (sameRanks.get(candidateLocation.get(i)).size() < sameRanks.get(candidateLocation.get(location))
+						.size()) {
+					location++;
+					return candidateLocation.get(location);
+				}
+				if (sameRanks.get(candidateLocation.get(i)).size() == sameRanks.get(candidateLocation.get(location))
+						.size()) {
+					while (flag) {
+						i++;
+						location++;
+						if (sameRanks.get(candidateLocation.get(i)).size() > sameRanks
+								.get(candidateLocation.get(location)).size()) {
+							location++;
+							flag = false;
+							return candidateLocation.get(i);
+						}
+						if (sameRanks.get(candidateLocation.get(i)).size() < sameRanks
+								.get(candidateLocation.get(location)).size()) {
+							location++;
+							flag = false;
+							return candidateLocation.get(location);
+						}
+					}
+					flag = false;
+				}
+			}
+		}
 
-		int someCounter = 1;
+		return location;
+	}
+
+	/**
+	 * Runs the voting rounds
+	 * 
+	 * @param sameRanks list where each index is a candidate and it contains the
+	 *                  ballots that were voted #1 or #2, etc.
+	 * @return none
+	 * 
+	 * 
+	 */
+	public static void CountingRounds(List<DynamicSet<Ballot>> sameRanks) {
+
 		int invalidCounter = 0;
 		int blanksCounter = 0;
 		int receivedBallots = voteList.size();
 		int numRound = 0;
 		int numberOfOnes = 0;
 		String winnerName = "";
+		String loserName = "";
 
-		for(int i = 0; i < voteList.size(); i++) {
-			if(voteList.get(i).getCandidateList().isEmpty()) {
+		for (int i = 0; i < voteList.size(); i++) {
+			if (voteList.get(i).getCandidateList().isEmpty()) {
 				blanksCounter++;
+
 			}
 		}
-		List<Integer> invalidIndexes = new ArrayList<Integer>();
-		for(int i = 0; i < voteList.size(); i++) {
-			if(!voteList.get(i).isValidBallot()) {
+		List<Integer> invalidIndexes = new ArrayList<>();
+		for (int i = 0; i < voteList.size(); i++) {
+			if (!voteList.get(i).isValidBallot()) {
 				invalidIndexes.add(i);
 				invalidCounter++;
+
 			}
 		}
-		for(Integer i : invalidIndexes) {
+		for (Integer i : invalidIndexes) {
 			voteList.remove(i);
 		}
-		List<Set<String>> sameRanks = candidateBallotArrayOfSets(someCounter);
 
-		for(int i = 0; i< sameRanks.size();i++) {
-			if(sameRanks.get(i).size() > Math.round(voteList.size()/2)) {
-				winnerName = candidateNameList.get(i);
-				numberOfOnes = sameRanks.get(i).size();
+		List<Integer> candidateLocation = new ArrayList<Integer>();
+		int maxRankIndex = 0;
+		int maxCount = 0;
+		sameRanks = candidateBallotArrayOfSets(maxRankIndex);
+		for (int i = 1; i < sameRanks.size(); i++) {
+			if (sameRanks.get(maxRankIndex).size() >= sameRanks.get(i).size()) {
+				maxRankIndex = i;
+				candidateLocation.add(maxCount);
+				maxCount++;
+
 			}
-			if(i < sameRanks.size() -1){
-				if(sameRanks.get(i).size() == sameRanks.get(i + 1).size()) {
-					int minCandidate = findMin(sameRanks)+1;
-					for(int j = 0; j < voteList.size(); j++) {
-						voteList.get(j).eliminate(minCandidate);
-						numRound = i;
-					}
-				}
+			numberOfOnes++;
+
+		}
+		if (maxRankIndex < Math.round(sameRanks.size() / 2)) {
+
+			int loser = tieBreaker(sameRanks, candidateLocation);
+			for (int i = 0; i < voteList.size(); i++) {
+				voteList.get(i).eliminate(loser);
+				numberOfOnes = i;
+				numRound++;
+				loserName = candidateNameList.get(loser);
 			}
 		}
-		//someCounter++;
-		//sameRanks = candidateBallotArrayOfSets(someCounter);	
+		if (maxRankIndex > Math.round(sameRanks.size() / 2)) {
 
+			winnerName = candidateNameList.get(candidateLocation.get(maxRankIndex - 1));
+		}
 		try {
 			fileWriter.write(String.format("Number of ballots received: %s\n", receivedBallots));
 			fileWriter.write(String.format("Number of blank ballots: %s\n", blanksCounter));
 			fileWriter.write(String.format("Number of invalid ballots: %s\n", invalidCounter));
-			fileWriter.write(String.format("Round: %1$s, %2$s was eliminated with %3$s #1's\n",
-					numRound, winnerName, numberOfOnes));
-			fileWriter.write(String.format("Winner: %1$s, wins with %2$s\n",
-					winnerName, numberOfOnes));
+			fileWriter.write(String.format("Round: %1$s, %2$s was eliminated with %3$s #1's\n", numRound, loserName,
+					numberOfOnes));
+			fileWriter.write(String.format("Winner: %1$s, wins with %2$s #1's\n", winnerName, numberOfOnes));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+
 	}
 
-
-
-
 	/**
-	 * Finds the candidate with the less number of ballots.
+	 * Finds the candidate with the least amount of #1 ballots.
 	 * 
-	 * @param sameRanks list where each index is a candidate and it contains the ballots that voted for them.
+	 * @param sameRanks list where each index is a candidate and it contains the
+	 *                  ballots that were voted #1.
 	 * @return index of the candidate
 	 */
-	public static int findMin(List<Set<String>> sameRanks) {
-		int minRankIndex = 1;
-		for(int i = 2; i < sameRanks.size(); i++) {
-			if(sameRanks.get(minRankIndex).size() >= sameRanks.get(i).size()) {
+	public static int findMin(List<DynamicSet<Ballot>> sameRanks) {
+		int minRankIndex = 0;
+		for (int i = 1; i < sameRanks.size(); i++) {
+			if (sameRanks.get(minRankIndex).size() >= sameRanks.get(i).size()) {
 				minRankIndex = i;
 			}
 		}

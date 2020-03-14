@@ -1,0 +1,5 @@
+Number of ballots received: 10
+Number of blank ballots: 0
+Number of invalid ballots: 0
+Round: 0,  was eliminated with 4 #1's
+Winner: Lola Mento, wins with 4 #1's
