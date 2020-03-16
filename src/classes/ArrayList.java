@@ -3,9 +3,9 @@ package classes;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-import interfaces.List;
+import interfaces.DynamicSet;
 
-public class ArrayList<E> implements List<E> {
+public class ArrayList<E> implements DynamicSet<E> {
 
 	// private fields
 	private E elements[];

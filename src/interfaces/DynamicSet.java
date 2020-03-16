@@ -1,5 +1,5 @@
 package interfaces;
-public interface List<E> extends Iterable<E> {
+public interface DynamicSet<E> extends Iterable<E> {
 	public void add(E obj);
 	public void add(int index, E obj);
 	public boolean remove(E obj);
