@@ -17,6 +17,9 @@ public class Ballot {
 				this.ballotNumber = Integer.parseInt(ballotStringArray[0]);
 			} else {
 				String[] temp = ballotStringArray[i].split(":");
+				if (temp[0].isEmpty()) {
+					Election.blanksCounter++;
+				}
 				idList.add(Integer.parseInt(temp[0]));
 				rankList.add(Integer.parseInt(temp[1]));
 			}
@@ -129,6 +132,8 @@ public class Ballot {
 		ArrayList<Integer> tempCandidate = new ArrayList<>();
 		for (int i = 0; i < rankList.size(); i++) {
 			if (tempRank.contains(rankList.get(i)) || rankList.get(i) > candidateCounter) {
+
+				Election.invalidCounter++;
 				return true;
 			} else {
 				tempRank.add(rankList.get(i));
@@ -136,6 +141,7 @@ public class Ballot {
 		}
 		for (int i = 0; i < idList.size(); i++) {
 			if (tempCandidate.contains(idList.get(i)) || idList.get(i) > candidateCounter) {
+				Election.invalidCounter++;
 				return true;
 			} else {
 				tempCandidate.add(idList.get(i));

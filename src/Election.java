@@ -44,6 +44,12 @@ public class Election {
 		int target = 1;
 		ArrayList<Candidate> minCandidates = findMin(candidateList, target);
 
+		if (minCandidates.get(target).getRankSet().size() > Math.round(voteList.size() / 2)) {
+			winnerName = candidateList.get(target).getName();
+			numberOfOnes = minCandidates.get(target).count(target);
+			target++;
+
+		}
 		if (minCandidates.size() > 1) {
 			while (minCandidates.size() > 1) {
 				target++;
@@ -89,6 +95,9 @@ public class Election {
 			ballotsSC = new BufferedReader(new FileReader("ballots.csv"));
 			while ((ballotString = ballotsSC.readLine()) != null) {
 				String[] ballotStringArray = ballotString.split(",");
+				if (ballotStringArray[1].isEmpty()) {
+					blanksCounter++;
+				}
 				voteList.add(new Ballot(ballotStringArray, candidateCounter));
 			}
 		} catch (IOException e) {
@@ -147,13 +156,6 @@ public class Election {
 	 * @return returns a list of sets where each index is a candidate and it
 	 *         contains the ballots that were voted #1
 	 */
-	public static ArrayList<DynamicSet<Ballot>> candidateBallotArrayOfSets(int rank) {
-
-		ArrayList<DynamicSet<Ballot>> numberOneBallot = new ArrayList<DynamicSet<Ballot>>();
-		int candidateNum = 1;
-		return numberOneBallot;
-
-	}
 
 	/**
 	 * finds the candidates that are tied
@@ -163,10 +165,6 @@ public class Election {
 	 *                  list of the candidates which are tied
 	 * @return index of the loser candidate
 	 */
-	public static int tieBreaker(DynamicSet<DynamicSet<Ballot>> sameRanks, DynamicSet<Integer> candidateLocation) {
-		return blanksCounter;
-
-	}
 
 	/**
 	 * Runs the voting rounds
