@@ -36,9 +36,12 @@ public class Candidate {
 		this.name = name;
 	}
 
-	/*
-	 * counts how many ranks there is in the list rankList varies per candidate
-	 * every candidate has a rankList targetRank is a specified rank
+	/**
+	 * counts how many ranks there is on the rankSet
+	 * 
+	 * @param targetRank
+	 * 
+	 * @return the number of ranks in that set
 	 */
 	public int count(int targetRank) {
 		int counter = 0;

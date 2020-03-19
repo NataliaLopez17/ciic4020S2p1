@@ -27,41 +27,88 @@ public class Election {
 		fileWriter = new FileWriter("results.txt");
 		candidateScanner();
 		ballotScanner();
-		setManager();
 		roundsManager();
+		moreThan50Winner();
+		CountingRounds();
 
 		fileWriter.close();
 	}
 
-	private static void roundsManager() {
+	/**
+	 * runs the rounds while there are still candidates
+	 * 
+	 * @param none
+	 * 
+	 * @return none
+	 */
+	public static void roundsManager() throws IOException {
 		int rounds = candidateList.size() - 1;
 		while (rounds-- > 0) {
 			decideWhoToEliminate();
 		}
 	}
 
-	private static void decideWhoToEliminate() {
+	/**
+	 * decides who the winner is if they have more than half the votes
+	 * 
+	 * @param none
+	 * 
+	 * @return none
+	 */
+	public static void moreThan50Winner() throws IOException {
+		int target = 1;
+		ArrayList<Candidate> maxCandidates = findMax(candidateList, target);
+		if (maxCandidates.get(target).getRankSet().size() > Math.round(voteList.size() / 2)) {
+			winnerName = candidateList.get(target).getName();
+			numberOfOnes = maxCandidates.get(target).count(target);
+			target++;
+		}
+		decideWhoToEliminate();
+	}
+
+	/**
+	 * eliminates and declares the winner
+	 * 
+	 * @param none
+	 * 
+	 * @return none
+	 */
+	public static void decideWhoToEliminate() throws IOException {
 		int target = 1;
 		ArrayList<Candidate> minCandidates = findMin(candidateList, target);
 
-		if (minCandidates.get(target).getRankSet().size() > Math.round(voteList.size() / 2)) {
-			winnerName = candidateList.get(target).getName();
-			numberOfOnes = minCandidates.get(target).count(target);
-			target++;
-
-		}
 		if (minCandidates.size() > 1) {
 			while (minCandidates.size() > 1) {
 				target++;
 				minCandidates = findMin(minCandidates, target);
 			}
-
 		}
 		for (int i = 0; i < voteList.size(); i++) {
-			voteList.get(i).eliminate(minCandidates.get(0).getId());
+			if (i < candidateList.size() - 1) {
+				if (i < minCandidates.size() - 1) {
+					voteList.get(i).eliminate(minCandidates.get(i).getId());
+					target++;
+				}
+				loserName = candidateList.get(i).getName();
+				numberOfOnes = candidateList.get(i).count(i + 1);
+				numRound = i + 1;
+				fileWriter.write(String.format("Round: %1$s, %2$s was eliminated with %3$s #1's\n", numRound, loserName,
+						numberOfOnes));
+			}
+
 		}
+		winnerName = candidateList.get(target).getName();
+		numberOfOnes = candidateList.get(target).count(target);
 
 	}
+
+	/**
+	 * creates sets with the #1s
+	 * 
+	 * @param none
+	 * 
+	 * @return none
+	 */
 
 	public static void setManager() {
 		for (Candidate c : candidateList) {
@@ -95,11 +142,12 @@ public class Election {
 			ballotsSC = new BufferedReader(new FileReader("ballots.csv"));
 			while ((ballotString = ballotsSC.readLine()) != null) {
 				String[] ballotStringArray = ballotString.split(",");
-				if (ballotStringArray[1].isEmpty()) {
+				if (ballotStringArray[1].matches("")) {
 					blanksCounter++;
 				}
 				voteList.add(new Ballot(ballotStringArray, candidateCounter));
 			}
+			receivedBallots = voteList.size();
 		} catch (IOException e) {
 			e.printStackTrace();
 		} finally {
@@ -111,7 +159,7 @@ public class Election {
 				}
 			}
 		}
-		receivedBallots = voteList.size();
+
 	}
 
 	/**
@@ -148,41 +196,20 @@ public class Election {
 	}
 
 	/**
-	 * Creates a list of sets where each index is a candidate and it contains the
-	 * ballots that were voted #1, #2, #3 ,etc.
+	 * Runs the prints
 	 * 
-	 * @param rank int where it takes a rank specified
-	 * 
-	 * @return returns a list of sets where each index is a candidate and it
-	 *         contains the ballots that were voted #1
-	 */
-
-	/**
-	 * finds the candidates that are tied
-	 * 
-	 * @param sameRanks list where each index is a candidate and it contains the
-	 *                  ballots that were voted #1 or #2, etc. candidateLocation
-	 *                  list of the candidates which are tied
-	 * @return index of the loser candidate
-	 */
-
-	/**
-	 * Runs the voting rounds
-	 * 
-	 * @param sameRanks list where each index is a candidate and it contains the
-	 *                  ballots that were voted #1 or #2, etc.
+	 * @param none
 	 * @return none
 	 * 
 	 * 
 	 */
-	public static void CountingRounds(DynamicSet<DynamicSet<Ballot>> sameRanks) {
+	public static void CountingRounds() {
 
 		try {
 			fileWriter.write(String.format("Number of ballots received: %s\n", receivedBallots));
 			fileWriter.write(String.format("Number of blank ballots: %s\n", blanksCounter));
 			fileWriter.write(String.format("Number of invalid ballots: %s\n", invalidCounter));
-			fileWriter.write(String.format("Round: %1$s, %2$s was eliminated with %3$s #1's\n", numRound, loserName,
-					numberOfOnes));
+
 			fileWriter.write(String.format("Winner: %1$s, wins with %2$s #1's\n", winnerName, numberOfOnes));
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -207,6 +234,29 @@ public class Election {
 				theArray.add(minCandidate);
 			} else if (minCandidate.count(targetRank) == candidateList.get(i).count(targetRank)) {
 				theArray.add(minCandidate);
+			}
+		}
+		return theArray;
+
+	}
+
+	/**
+	 * Finds the candidate with the most amount of #1 ballots.
+	 * 
+	 * @param sameRanks list where each index is a candidate and it contains the
+	 *                  ballots that were voted #1.
+	 * @return the Candidate with the highest rank
+	 */
+	public static ArrayList<Candidate> findMax(ArrayList<Candidate> candidateList, int targetRank) {
+		ArrayList<Candidate> theArray = new ArrayList<Candidate>();
+		Candidate maxCandidate = candidateList.get(0);
+		for (int i = 1; i < candidateList.size(); i++) {
+			if (maxCandidate.count(targetRank) > candidateList.get(i).count(targetRank)) {
+				maxCandidate = candidateList.get(i);
+				theArray.clear();
+				theArray.add(maxCandidate);
+			} else if (maxCandidate.count(targetRank) == candidateList.get(i).count(targetRank)) {
+				theArray.add(maxCandidate);
 			}
 		}
 		return theArray;

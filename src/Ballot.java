@@ -1,50 +1,47 @@
 import java.util.Arrays;
 
 import classes.ArrayList;
-import interfaces.DynamicSet;
 
 public class Ballot {
 
 	private int ballotNumber;
-	DynamicSet<Integer> idList;
-	DynamicSet<Integer> rankList;
+	ArrayList<Integer> idList;
+	ArrayList<Integer> rankList;
 	private int candidateCounter;
 
 	public Ballot(String[] ballotStringArray, int candidateCounter) {
+		idList = new ArrayList<Integer>(1);
+		rankList = new ArrayList<Integer>(1);
 		this.candidateCounter = candidateCounter;
 		for (int i = 0; i < ballotStringArray.length; i++) {
 			if (i == 0) {
 				this.ballotNumber = Integer.parseInt(ballotStringArray[0]);
 			} else {
 				String[] temp = ballotStringArray[i].split(":");
-				if (temp[0].isEmpty()) {
-					Election.blanksCounter++;
-				}
+
 				idList.add(Integer.parseInt(temp[0]));
 				rankList.add(Integer.parseInt(temp[1]));
 			}
 		}
 	}
 
-	// ---------------------------------methods-----------------------------------
-
 	public void setBallotNumber(int ballotNumber) {
 		this.ballotNumber = ballotNumber;
 	}
 
-	public DynamicSet<Integer> getIdList() {
+	public ArrayList<Integer> getIdList() {
 		return idList;
 	}
 
-	public void setIdList(DynamicSet<Integer> idList) {
+	public void setIdList(ArrayList<Integer> idList) {
 		this.idList = idList;
 	}
 
-	public DynamicSet<Integer> getRankList() {
+	public ArrayList<Integer> getRankList() {
 		return rankList;
 	}
 
-	public void setRankList(DynamicSet<Integer> rankList) {
+	public void setRankList(ArrayList<Integer> rankList) {
 		this.rankList = rankList;
 	}
 
@@ -150,6 +147,13 @@ public class Ballot {
 		return checkRankSequence();
 	}
 
+	/**
+	 * checks the rank sequence
+	 * 
+	 * @param none
+	 * 
+	 * @return true if the array is in order, false if not
+	 */
 	private boolean checkRankSequence() {
 		Integer[] intArray = new Integer[rankList.size()];
 		for (int i = 0; i < intArray.length; i++) {
